@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿勛小廚神 - 食譜全開版</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        [v-cloak] { display: none; }
+        body { background-color: #f3f4f6; font-family: "PingFang TC", sans-serif; }
+        .app-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #fff; }
+        .ingredient-btn { transition: all 0.2s; border: 1px solid #e5e7eb; }
+        .ingredient-btn.active { background: #334155 !important; color: white !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .gf-zone { background: #fff5f5; border-radius: 20px; border: 1px dashed #feb2b2; }
+        .recipe-img { height: 220px; width: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="app-shell flex flex-col shadow-xl">
+    
+    <header class="p-6 bg-white sticky top-0 z-50 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center border-2 border-orange-200">
+                <svg viewBox="0 0 100 100" class="w-10 h-10">
+                    <path d="M30,35 Q30,10 50,10 Q70,10 70,35 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                    <rect x="30" y="30" width="40" height="8" fill="#fff" stroke="#333" stroke-width="2"/>
+                    <circle cx="50" cy="60" r="25" fill="#D2A679" stroke="#333" stroke-width="2"/>
+                    <path d="M35,45 Q40,35 45,45 M55,45 Q60,35 65,45" fill="none" stroke="#4B3621" stroke-width="3" stroke-linecap="round"/>
+                    <circle cx="42" cy="60" r="2" fill="#333"/><circle cx="58" cy="60" r="2" fill="#333"/>
+                    <path d="M45,72 Q50,78 55,72" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-gray-800">阿勛小廚神</h1>
+                <p class="text-xs text-gray-400">今天想吃什麼？</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <div class="p-5 space-y-6">
+            <div v-for="(list, cat) in categories" :key="cat">
+                <h3 class="text-xs font-bold text-gray-400 mb-3 tracking-widest uppercase">{{ cat }}</h3>
+                <div class="flex flex-wrap gap-2">
+                    <button v-for="item in list" :key="item" @click="toggle(item)"
+                        :class="['ingredient-btn px-4 py-2 rounded-xl text-sm font-medium', 
+                        selected.includes(item) ? 'active' : 'bg-gray-50 text-gray-600']">
+                        {{ item }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-5 pb-28">
+            <div v-if="results.length > 0" class="space-y-10">
+                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <span class="w-1 h-5 bg-orange-500 rounded-full"></span> 
+                    為你推薦 {{ results.length }} 道料理
+                </h2>
+                
+                <div v-for="r in results" :key="r.name" class="recipe-card rounded-3xl overflow-hidden border border-gray-100 shadow-md bg-white">
+                    <img :src="r.img" class="recipe-img" :alt="r.name">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-2xl font-black text-gray-800">{{ r.name }}</h3>
+                            <span class="bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-1 rounded-lg">熱門菜色</span>
+                        </div>
+                        
+                        <div class="mb-6 space-y-3">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-shopping-basket text-gray-400 mt-1"></i>
+                                <p class="text-sm text-gray-600"><strong>食材：</strong>{{ r.desc }}</p>
+                            </div>
+                        </div>
+
+                        <div class="gf-zone p-4 relative">
+                            <div class="absolute -top-3 left-4 bg-white px-2 text-red-400 text-xs font-bold">
+                                <i class="fas fa-heart mr-1"></i> 女友犀利點評
+                            </div>
+                            <p class="text-sm text-red-700 italic leading-relaxed font-medium">
+                                「{{ r.gf }}」
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-else class="text-center py-20">
+                <div class="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-utensils text-gray-300 text-3xl"></i>
+                </div>
+                <p class="text-gray-400">勾選你想應用的食材<br>阿勛幫你變魔術！</p>
+            </div>
+        </div>
+    </main>
+
+    <div v-if="selected.length > 0" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-5 bg-white/80 backdrop-blur-md">
+        <button @click="selected = []" class="w-full bg-red-500 text-white py-4 rounded-2xl font-bold shadow-xl">
+            重選食材 (已選 {{ selected.length }})
+        </button>
+    </div>
+</div>
+
+<script>
+const { createApp, ref, computed } = Vue;
+
+createApp({
+    setup() {
+        const selected = ref([]);
+        const categories = {
+            '🥩 肉類海鮮': ['雞肉', '牛肉', '豬肉', '雞蛋', '蝦子', '蛤蜊'],
+            '🥬 蔬菜配料': ['番茄', '青花菜', '洋蔥', '馬鈴薯', '高麗菜', '茄子', '大蒜', '九層塔'],
+            '🍚 主食澱粉': ['白飯', '麵條', '吐司']
+        };
+
+        const recipes = [
+            {
+                tags: ['雞肉', '九層塔'],
+                name: '台式三杯雞',
+                img: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800',
+                desc: '雞肉、薑片、蒜頭、九層塔、醬油、麻油、米酒。',
+                gf: '三杯雞超下飯我知道，但麻油跟糖熱量很高，你白飯給我控制在一碗以內！'
+            },
+            {
+                tags: ['豬肉', '番茄', '雞蛋'],
+                name: '番茄肉末滑蛋',
+                img: 'https://images.unsplash.com/photo-1529940316268-e245e031bcd1?w=800',
+                desc: '豬絞肉、番茄、雞蛋、蔥花。',
+                gf: '這道蛋白質算多，但我看到你加番茄醬了，那裡面全是糖，下次改用新鮮番茄好嗎？'
+            },
+            {
+                tags: ['牛肉', '馬鈴薯', '洋蔥'],
+                name: '家常馬鈴薯燉肉',
+                img: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800',
+                desc: '牛肉塊、馬鈴薯、紅蘿蔔、洋蔥。',
+                gf: '馬鈴薯是澱粉，不是蔬菜！如果你這餐吃了馬鈴薯，就不要再給我配大碗白飯！'
+            },
+            {
+                tags: ['白飯', '雞蛋', '豬肉'],
+                name: '阿勛特製肉絲炒飯',
+                img: 'https://images.unsplash.com/photo-1512058560566-4334037bc45a?w=800',
+                desc: '冷飯、豬肉絲、雞蛋、大蒜。',
+                gf: '炒飯就是澱粉加油脂的炸彈！尤其是外面賣的都超油，你這盤油加多少你自己心裡有數。'
+            },
+            {
+                tags: ['蝦子', '大蒜'],
+                name: '蒜味奶油蝦',
+                img: 'https://images.unsplash.com/photo-1559742811-822873691df8?w=800',
+                desc: '鮮蝦、大量蒜末、奶油、黑胡椒。',
+                gf: '奶油雖然香，但飽和脂肪爆表。蝦子很健康，拜託不要用奶油淹沒它。'
+            },
+            {
+                tags: ['茄子', '九層塔'],
+                name: '魚香茄子',
+                img: 'https://images.unsplash.com/photo-1626139862230-0911eeea9518?w=800',
+                desc: '茄子、肉燥、大蒜、九層塔、豆瓣醬。',
+                gf: '茄子很吸油！你這一口咬下去全是油吧？記得配點清爽的青菜平衡一下。'
+            },
+            {
+                tags: ['吐司', '雞蛋'],
+                name: '法式金黃吐司',
+                img: 'https://images.unsplash.com/photo-1484723088339-fe28233e562e?w=800',
+                desc: '吐司、雞蛋、鮮奶、少許蜂蜜。',
+                gf: '這就是精緻澱粉大集合。雖然好吃，但你的血糖會飆升，下午不要又在那邊喊累睡著！'
+            },
+            {
+                tags: ['蛤蜊', '大蒜'],
+                name: '酒蒸蛤蜊',
+                img: 'https://images.unsplash.com/photo-1533682805518-48d1f5b8cd3a?w=800',
+                desc: '蛤蜊、大蒜、米酒、蔥花。',
+                gf: '這道還算識相，低脂高蛋白。但湯頭不要喝光，那裡面普林跟鹽分都很高。'
+            }
+        ];
+
+        const toggle = (i) => {
+            const idx = selected.value.indexOf(i);
+            if (idx > -1) selected.value.splice(idx, 1);
+            else selected.value.push(i);
+        };
+
+        const results = computed(() => {
+            if (selected.value.length === 0) return [];
+            return recipes.filter(r => r.tags.some(t => selected.value.includes(t)));
+        });
+
+        return { selected, categories, toggle, results };
+    }
+}).mount('#app');
+</script>
+
+</body>
+</html>
