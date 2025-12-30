@@ -2,85 +2,88 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>阿勛小廚神 - 食譜全開版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>阿勛小廚神 v5.0</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         [v-cloak] { display: none; }
-        body { background-color: #f3f4f6; font-family: "PingFang TC", sans-serif; }
-        .app-shell { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #fff; }
-        .ingredient-btn { transition: all 0.2s; border: 1px solid #e5e7eb; }
-        .ingredient-btn.active { background: #334155 !important; color: white !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .gf-zone { background: #fff5f5; border-radius: 20px; border: 1px dashed #feb2b2; }
-        .recipe-img { height: 220px; width: 100%; object-fit: cover; }
+        body { background-color: #f1f5f9; font-family: "PingFang TC", "STHeiti", sans-serif; -webkit-tap-highlight-color: transparent; }
+        .app-shell { max-width: 500px; margin: 0 auto; min-height: 100vh; background: #ffffff; box-shadow: 0 10px 50px rgba(0,0,0,0.1); }
+        .ingredient-chip { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .ingredient-chip.active { background: #1e293b !important; color: white !important; transform: scale(0.92); border-color: #1e293b; }
+        .gf-box { background: #fff1f2; border-radius: 1.5rem; border-left: 6px solid #fb7185; }
+        .recipe-card { animation: fadeInUp 0.4s ease-out; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-<div id="app" v-cloak class="app-shell flex flex-col shadow-xl">
-    
-    <header class="p-6 bg-white sticky top-0 z-50 border-b border-gray-100 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center border-2 border-orange-200">
-                <svg viewBox="0 0 100 100" class="w-10 h-10">
-                    <path d="M30,35 Q30,10 50,10 Q70,10 70,35 Z" fill="#fff" stroke="#333" stroke-width="2"/>
-                    <rect x="30" y="30" width="40" height="8" fill="#fff" stroke="#333" stroke-width="2"/>
-                    <circle cx="50" cy="60" r="25" fill="#D2A679" stroke="#333" stroke-width="2"/>
-                    <path d="M35,45 Q40,35 45,45 M55,45 Q60,35 65,45" fill="none" stroke="#4B3621" stroke-width="3" stroke-linecap="round"/>
-                    <circle cx="42" cy="60" r="2" fill="#333"/><circle cx="58" cy="60" r="2" fill="#333"/>
-                    <path d="M45,72 Q50,78 55,72" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+<div id="app" v-cloak class="app-shell flex flex-col">
+    <header class="p-6 pb-4 bg-white sticky top-0 z-50 flex items-center justify-between border-b border-slate-50">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center border-2 border-slate-200 overflow-hidden shadow-inner">
+                <svg viewBox="0 0 100 100" class="w-12 h-12">
+                    <path d="M30,35 Q30,10 50,10 Q70,10 70,35 Z" fill="#fff" stroke="#333" stroke-width="2.5"/>
+                    <rect x="30" y="32" width="40" height="6" fill="#fff" stroke="#333" stroke-width="2.5"/>
+                    <circle cx="50" cy="62" r="24" fill="#E6B18A" stroke="#333" stroke-width="2.5"/>
+                    <path d="M35,48 Q40,38 45,48 M55,48 Q60,38 65,48" fill="none" stroke="#4B3621" stroke-width="3.5" stroke-linecap="round"/>
+                    <circle cx="43" cy="62" r="2.5" fill="#333"/><circle cx="57" cy="62" r="2.5" fill="#333"/>
+                    <path d="M44,75 Q50,81 56,75" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>
                 </svg>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-gray-800">阿勛小廚神</h1>
-                <p class="text-xs text-gray-400">今天想吃什麼？</p>
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">阿勛小廚神</h1>
+                <p class="text-xs text-slate-400 font-medium">今天買了什麼好料？</p>
             </div>
         </div>
+        <button @click="selected = []" class="text-slate-300 hover:text-red-500 transition-colors">
+            <i class="fas fa-redo-alt"></i>
+        </button>
     </header>
 
-    <main class="flex-1">
-        <div class="p-5 space-y-6">
-            <div v-for="(list, cat) in categories" :key="cat">
-                <h3 class="text-xs font-bold text-gray-400 mb-3 tracking-widest uppercase">{{ cat }}</h3>
-                <div class="flex flex-wrap gap-2">
-                    <button v-for="item in list" :key="item" @click="toggle(item)"
-                        :class="['ingredient-btn px-4 py-2 rounded-xl text-sm font-medium', 
-                        selected.includes(item) ? 'active' : 'bg-gray-50 text-gray-600']">
+    <main class="flex-1 overflow-y-auto no-scrollbar">
+        <div class="p-6 space-y-8">
+            <section v-for="(list, cat) in categories" :key="cat">
+                <h3 class="text-xs font-black text-slate-400 mb-4 tracking-widest uppercase flex items-center gap-2">
+                    <span class="w-1 h-3 bg-slate-300 rounded-full"></span> {{ cat }}
+                </h3>
+                <div class="flex flex-wrap gap-2.5">
+                    <div v-for="item in list" :key="item" 
+                        @click="toggle(item)"
+                        :class="['ingredient-chip px-5 py-2.5 rounded-2xl text-sm font-bold border border-slate-100 shadow-sm', 
+                        selected.includes(item) ? 'active' : 'bg-white text-slate-600']">
                         {{ item }}
-                    </button>
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
 
-        <div class="px-5 pb-28">
-            <div v-if="results.length > 0" class="space-y-10">
-                <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <span class="w-1 h-5 bg-orange-500 rounded-full"></span> 
-                    為你推薦 {{ results.length }} 道料理
-                </h2>
+        <div class="px-6 pb-32">
+            <div v-if="results.length > 0" class="space-y-12">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-black text-slate-800">為你變出的料理 ({{ results.length }})</h2>
+                </div>
                 
-                <div v-for="r in results" :key="r.name" class="recipe-card rounded-3xl overflow-hidden border border-gray-100 shadow-md bg-white">
-                    <img :src="r.img" class="recipe-img" :alt="r.name">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-2xl font-black text-gray-800">{{ r.name }}</h3>
-                            <span class="bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-1 rounded-lg">熱門菜色</span>
+                <div v-for="r in results" :key="r.name" class="recipe-card bg-white rounded-[2.5rem] overflow-hidden shadow-xl shadow-slate-200/50 border border-slate-50">
+                    <img :src="r.img" class="w-full h-64 object-cover" loading="lazy">
+                    <div class="p-7">
+                        <div class="flex gap-2 mb-4">
+                            <span class="bg-amber-100 text-amber-700 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">Chef Ashun</span>
+                            <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">{{ r.time }}</span>
                         </div>
-                        
-                        <div class="mb-6 space-y-3">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-shopping-basket text-gray-400 mt-1"></i>
-                                <p class="text-sm text-gray-600"><strong>食材：</strong>{{ r.desc }}</p>
-                            </div>
-                        </div>
+                        <h3 class="text-2xl font-black text-slate-800 mb-3">{{ r.name }}</h3>
+                        <p class="text-sm text-slate-500 leading-relaxed mb-8 bg-slate-50 p-4 rounded-2xl border-l-4 border-slate-200">
+                            <strong class="text-slate-700 block mb-1">準備清單：</strong>{{ r.desc }}
+                        </p>
 
-                        <div class="gf-zone p-4 relative">
-                            <div class="absolute -top-3 left-4 bg-white px-2 text-red-400 text-xs font-bold">
-                                <i class="fas fa-heart mr-1"></i> 女友犀利點評
+                        <div class="gf-box p-5 relative">
+                            <div class="absolute -top-3 left-6 bg-rose-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-md">
+                                <i class="fas fa-comment-heart mr-1"></i> 犀利女友點評
                             </div>
-                            <p class="text-sm text-red-700 italic leading-relaxed font-medium">
+                            <p class="text-[15px] text-rose-800 italic leading-relaxed font-bold">
                                 「{{ r.gf }}」
                             </p>
                         </div>
@@ -88,20 +91,15 @@
                 </div>
             </div>
 
-            <div v-else class="text-center py-20">
-                <div class="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-utensils text-gray-300 text-3xl"></i>
+            <div v-else class="text-center py-20 px-10">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg border border-slate-50">
+                    <i class="fas fa-hat-chef text-slate-200 text-4xl"></i>
                 </div>
-                <p class="text-gray-400">勾選你想應用的食材<br>阿勛幫你變魔術！</p>
+                <h3 class="text-slate-800 font-black text-lg">大廚準備好了！</h3>
+                <p class="text-slate-400 text-sm mt-2 leading-relaxed">選幾個食材，我看看能不能做出不被女友嫌棄的料理...</p>
             </div>
         </div>
     </main>
-
-    <div v-if="selected.length > 0" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] p-5 bg-white/80 backdrop-blur-md">
-        <button @click="selected = []" class="w-full bg-red-500 text-white py-4 rounded-2xl font-bold shadow-xl">
-            重選食材 (已選 {{ selected.length }})
-        </button>
-    </div>
 </div>
 
 <script>
@@ -111,68 +109,26 @@ createApp({
     setup() {
         const selected = ref([]);
         const categories = {
-            '🥩 肉類海鮮': ['雞肉', '牛肉', '豬肉', '雞蛋', '蝦子', '蛤蜊'],
-            '🥬 蔬菜配料': ['番茄', '青花菜', '洋蔥', '馬鈴薯', '高麗菜', '茄子', '大蒜', '九層塔'],
-            '🍚 主食澱粉': ['白飯', '麵條', '吐司']
+            '🥩 蛋白質主力': ['雞肉', '牛肉', '豬肉', '雞蛋', '蝦子', '蛤蜊', '豆腐'],
+            '🥬 冰箱靈魂': ['番茄', '青花菜', '洋蔥', '馬鈴薯', '高麗菜', '茄子', '大蒜', '九層塔', '杏鮑菇'],
+            '🍚 碳水填充': ['白飯', '麵條', '吐司', '糙米飯']
         };
 
         const recipes = [
-            {
-                tags: ['雞肉', '九層塔'],
-                name: '台式三杯雞',
-                img: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800',
-                desc: '雞肉、薑片、蒜頭、九層塔、醬油、麻油、米酒。',
-                gf: '三杯雞超下飯我知道，但麻油跟糖熱量很高，你白飯給我控制在一碗以內！'
-            },
-            {
-                tags: ['豬肉', '番茄', '雞蛋'],
-                name: '番茄肉末滑蛋',
-                img: 'https://images.unsplash.com/photo-1529940316268-e245e031bcd1?w=800',
-                desc: '豬絞肉、番茄、雞蛋、蔥花。',
-                gf: '這道蛋白質算多，但我看到你加番茄醬了，那裡面全是糖，下次改用新鮮番茄好嗎？'
-            },
-            {
-                tags: ['牛肉', '馬鈴薯', '洋蔥'],
-                name: '家常馬鈴薯燉肉',
-                img: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800',
-                desc: '牛肉塊、馬鈴薯、紅蘿蔔、洋蔥。',
-                gf: '馬鈴薯是澱粉，不是蔬菜！如果你這餐吃了馬鈴薯，就不要再給我配大碗白飯！'
-            },
-            {
-                tags: ['白飯', '雞蛋', '豬肉'],
-                name: '阿勛特製肉絲炒飯',
-                img: 'https://images.unsplash.com/photo-1512058560566-4334037bc45a?w=800',
-                desc: '冷飯、豬肉絲、雞蛋、大蒜。',
-                gf: '炒飯就是澱粉加油脂的炸彈！尤其是外面賣的都超油，你這盤油加多少你自己心裡有數。'
-            },
-            {
-                tags: ['蝦子', '大蒜'],
-                name: '蒜味奶油蝦',
-                img: 'https://images.unsplash.com/photo-1559742811-822873691df8?w=800',
-                desc: '鮮蝦、大量蒜末、奶油、黑胡椒。',
-                gf: '奶油雖然香，但飽和脂肪爆表。蝦子很健康，拜託不要用奶油淹沒它。'
-            },
-            {
-                tags: ['茄子', '九層塔'],
-                name: '魚香茄子',
-                img: 'https://images.unsplash.com/photo-1626139862230-0911eeea9518?w=800',
-                desc: '茄子、肉燥、大蒜、九層塔、豆瓣醬。',
-                gf: '茄子很吸油！你這一口咬下去全是油吧？記得配點清爽的青菜平衡一下。'
-            },
-            {
-                tags: ['吐司', '雞蛋'],
-                name: '法式金黃吐司',
-                img: 'https://images.unsplash.com/photo-1484723088339-fe28233e562e?w=800',
-                desc: '吐司、雞蛋、鮮奶、少許蜂蜜。',
-                gf: '這就是精緻澱粉大集合。雖然好吃，但你的血糖會飆升，下午不要又在那邊喊累睡著！'
-            },
-            {
-                tags: ['蛤蜊', '大蒜'],
-                name: '酒蒸蛤蜊',
-                img: 'https://images.unsplash.com/photo-1533682805518-48d1f5b8cd3a?w=800',
-                desc: '蛤蜊、大蒜、米酒、蔥花。',
-                gf: '這道還算識相，低脂高蛋白。但湯頭不要喝光，那裡面普林跟鹽分都很高。'
-            }
+            { tags: ['雞肉', '九層塔'], name: '台式三杯雞', time: '30 MIN', img: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800', desc: '雞腿肉、九層塔、薑片、麻油、醬油、糖。', gf: '三杯雞超下飯我知道，但麻油跟糖熱量很高，你白飯給我控制在一碗以內！' },
+            { tags: ['雞蛋', '番茄'], name: '家常番茄炒蛋', time: '10 MIN', img: 'https://images.unsplash.com/photo-1529940316268-e245e031bcd1?w=800', desc: '新鮮番茄、雞蛋、蔥花。', gf: '不准加番茄醬或砂糖，那是人工添加物！就吃番茄的原味，蛋白質夠但我盯著你放多少油喔。' },
+            { tags: ['牛肉', '洋蔥'], name: '日式洋蔥牛柳', time: '15 MIN', img: 'https://images.unsplash.com/photo-1512058560566-4334037bc45a?w=800', desc: '牛肉片、洋蔥、黑胡椒、醬油。', gf: '牛肉鐵質多不錯，但洋蔥不要炒得太鹹，水腫很難消你知不知道？' },
+            { tags: ['白飯', '雞蛋'], name: '黃金蛋炒飯', time: '12 MIN', img: 'https://images.unsplash.com/photo-1512058560566-4334037bc45a?w=800', desc: '冷飯、雞蛋、大量蔥花。', gf: '又是炒飯？澱粉量超標了吧！油要是敢加超過一匙，這盤你自己全部吃掉。' },
+            { tags: ['馬鈴薯', '雞肉', '洋蔥'], name: '日式馬鈴薯燉雞', time: '40 MIN', img: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800', desc: '雞肉塊、馬鈴薯、紅蘿蔔、洋蔥。', gf: '馬鈴薯是澱粉！你這餐吃了馬鈴薯就不要再配飯了，別跟我爭！' },
+            { tags: ['蝦子', '大蒜'], name: '蒜泥蒸大蝦', time: '15 MIN', img: 'https://images.unsplash.com/photo-1559742811-822873691df8?w=800', desc: '鮮蝦、大量蒜末、蔥花、米酒。', gf: '海鮮很好，但蒜泥不要配太多油。對了，殼記得幫我剝好。' },
+            { tags: ['豆腐', '豬肉'], name: '麻婆豆腐', time: '20 MIN', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800', desc: '嫩豆腐、豬肉燥、辣豆瓣醬、花椒。', gf: '這道超油超鹹，白飯小偷就是它。你今天是不是打算放棄減脂了？' },
+            { tags: ['高麗菜', '蝦子'], name: '櫻花蝦炒高麗菜', time: '10 MIN', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800', desc: '高麗菜、蝦米或鮮蝦、大蒜。', gf: '青菜多吃一點沒錯，但不要炒太久，維生素都流失光了！' },
+            { tags: ['吐司', '雞蛋'], name: '法式吐司', time: '15 MIN', img: 'https://images.unsplash.com/photo-1484723088339-fe28233e562e?w=800', desc: '吐司、雞蛋、鮮奶、少許蜂蜜。', gf: '這就是精緻澱粉大集合。雖然好吃，但你的血糖會飆升，下午不要又在那邊喊累！' },
+            { tags: ['茄子', '大蒜'], name: '塔香茄子', time: '12 MIN', img: 'https://images.unsplash.com/photo-1626139862230-0911eeea9518?w=800', desc: '茄子、大蒜、九層塔、醬油膏。', gf: '茄子很吸油！你這一口咬下去全是油吧？記得配點清爽的青菜平衡一下。' },
+            { tags: ['麵條', '雞蛋', '大蒜'], name: '蒜香蛋拌麵', time: '10 MIN', img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=800', desc: '手工麵、雞蛋、大量蒜酥、醬油。', gf: '又是麵條...蛋白質在哪？隨便煎個蛋就算喔？給我去加點雞肉！' },
+            { tags: ['杏鮑菇', '青花菜'], name: '清炒雙蔬', time: '10 MIN', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800', desc: '杏鮑菇、青花菜、橄欖油、海鹽。', gf: '這道還算識相，原型食物典範。你要是敢配珍奶當午餐，我就把你這盤餵貓。' },
+            { tags: ['豬肉', '洋蔥'], name: '薑汁豬肉燒', time: '20 MIN', img: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800', desc: '豬肉片、洋蔥、薑末、味醂、醬油。', gf: '薑可以促進代謝是不錯，但味醂甜度很高，你適可而止喔。' },
+            { tags: ['蛤蜊', '大蒜'], name: '酒蒸蛤蜊', time: '15 MIN', img: 'https://images.unsplash.com/photo-1533682805518-48d1f5b8cd3a?w=800', desc: '蛤蜊、大蒜、米酒、蔥花。', gf: '低脂高蛋白，算你聰明。但湯頭不要喝光，那裡面鹽分很高！' }
         ];
 
         const toggle = (i) => {
