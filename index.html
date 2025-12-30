@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>阿勛小廚神 v7.1</title>
+    <title>阿勛小廚神 v7.2 - 下酒菜加強版</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -21,7 +21,7 @@
 
         /* 女友點評區與彩蛋動畫 */
         .gf-box { background: #fff1f2; border-radius: 12px; padding: 16px; border-left: 4px solid #f43f5e; position: relative; margin-top: 20px; transition: all 0.5s ease; }
-        .gf-box.warm-mode { background: #fff7ed; border-left-color: #f97316; } /* 溫馨模式變色 */
+        .gf-box.warm-mode { background: #fff7ed; border-left-color: #f97316; }
         .gf-icon { position: absolute; top: -10px; left: 10px; background: #f43f5e; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
         .gf-box.warm-mode .gf-icon { background: #f97316; }
 
@@ -48,7 +48,7 @@
                     <circle cx="43" cy="65" r="2" fill="#333"/><circle cx="57" cy="65" r="2" fill="#333"/>
                 </svg>
             </div>
-            <h1 class="text-lg font-black text-gray-800">阿勛小廚神 <span class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full">v7.1</span></h1>
+            <h1 class="text-lg font-black text-gray-800">阿勛小廚神 <span class="text-[10px] text-orange-500 font-bold bg-orange-50 px-2 py-0.5 rounded-full">v7.2</span></h1>
         </div>
         <button @click="selected = []" v-if="selected.length" class="text-sm text-red-500 font-bold hover:bg-red-50 px-3 py-1 rounded-full transition-colors">重選</button>
     </header>
@@ -139,8 +139,11 @@
             </div>
 
             <div v-else class="text-center py-16 opacity-50">
-                <i class="fas fa-utensils text-5xl mb-4 text-gray-300"></i>
-                <h3 class="text-lg font-bold text-gray-400">找不到食譜...</h3>
+                <i v-if="currentTab === 'side'" class="fas fa-beer text-5xl mb-4 text-gray-300"></i>
+                <i v-else class="fas fa-utensils text-5xl mb-4 text-gray-300"></i>
+                <h3 class="text-lg font-bold text-gray-400">
+                    {{ currentTab === 'side' ? '這裡沒有下酒菜...' : '找不到食譜...' }}
+                </h3>
                 <p class="text-sm text-gray-400 mt-2">請先選擇食材</p>
             </div>
         </div>
@@ -156,13 +159,78 @@ createApp({
         const currentTab = ref('all');
         
         const categories = {
-            '主食與肉類': ['雞腿肉', '牛肉', '豬肉', '雞蛋', '蝦子'],
+            '主食與肉類': ['雞腿肉', '牛肉', '豬肉', '雞蛋', '蝦子', '明太魚'], // 新增明太魚
             '蔬菜': ['櫛瓜', '蔥', '洋蔥', '大蒜', '青花菜', '番茄', '辣椒'],
-            '其他': ['豆腐', '海苔', '馬鈴薯']
+            '其他': ['豆腐', '腐竹', '海苔', '馬鈴薯'] // 新增腐竹
         };
 
         const recipes = ref([
-            // --- 彩蛋食譜：番茄炒蛋 ---
+            // --- NEW: 椒鹽壽喜腐竹 ---
+            {
+                type: 'side',
+                tags: ['腐竹'],
+                name: '十分鐘上菜—椒鹽壽喜腐竹',
+                time: '10 分鐘',
+                img: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800', // 示意圖
+                ingredients: [
+                    { name: '新鮮黃金腐竹', qty: '1 盒' },
+                    { name: '壽喜燒鍋醬', qty: '1 匙' },
+                    { name: '紅辣椒、蒜頭', qty: '適量' },
+                    { name: '白胡椒粉、蒜粉', qty: '各 1 小匙' },
+                    { name: '香菜', qty: '2 株' }
+                ],
+                steps: [
+                    '腐竹洗淨擦乾，加少許鹽預先調味。',
+                    '起油鍋，將腐竹炸至金黃酥脆後撈出瀝油。',
+                    '趁熱拌入辣椒段、蒜末、香菜末、白胡椒粉與蒜粉。',
+                    '最後淋上壽喜燒醬汁，均勻拌開即可享用。'
+                ],
+                gf: '油炸腐竹？這根本就是吸油海綿吧！雖然加了壽喜燒醬很香，但你吃一口就是喝一口油，別以為是豆製品就很健康，吃完明天記得去跑 5 公里。'
+            },
+            // --- NEW: 辣拌明太魚乾絲 ---
+            {
+                type: 'side',
+                tags: ['明太魚'],
+                name: '韓廚下酒菜—辣拌明太魚',
+                time: '10 分鐘',
+                img: 'https://images.unsplash.com/photo-1580651315530-69c8e0026377?w=800', // 示意韓式料理
+                ingredients: [
+                    { name: '明太魚乾', qty: '150g' },
+                    { name: '韓式辣醬', qty: '3 大匙' },
+                    { name: '蜂蜜', qty: '2 大匙' },
+                    { name: '香油、白芝麻', qty: '各 1 大匙' },
+                    { name: '梅汁', qty: '2 大匙' }
+                ],
+                steps: [
+                    '明太魚乾先灑點開水抓拌一下軟化備用。',
+                    '將辣醬、香油、蜂蜜、梅汁在碗中攪拌均勻。',
+                    '放入魚乾，邊加少許開水邊翻拌，讓醬汁均勻沾附即可。'
+                ],
+                gf: '這道是韓劇看太多嗎？明太魚乾蛋白質很高是不錯，但那個韓式辣醬鈉含量超高，還加了蜂蜜！配啤酒是可以，但明天臉腫起來別怪我。'
+            },
+            // --- NEW: 義式鯷魚炒櫛瓜蝦仁 ---
+            {
+                type: 'side',
+                tags: ['櫛瓜', '蝦子'],
+                name: '義式鯷魚炒櫛瓜蝦仁',
+                time: '15 分鐘',
+                img: 'https://images.unsplash.com/photo-1551248429-40975aa4de74?w=800',
+                ingredients: [
+                    { name: '櫛瓜', qty: '1 條' },
+                    { name: '蝦仁', qty: '適量' },
+                    { name: '鯷魚', qty: '4 條' },
+                    { name: '洋蔥、蒜頭', qty: '適量' },
+                    { name: '青蔥、蒔蘿', qty: '少許' },
+                    { name: '魚露', qty: '少許' }
+                ],
+                steps: [
+                    '橄欖油與奶油炒香切碎的洋蔥。',
+                    '下鯷魚與櫛瓜拌炒，接著加入蒜粒與蝦仁，鍋邊嗆些許魚露。',
+                    '灑鹽和大量胡椒調味，起鍋前加入青蔥和蒔蘿。'
+                ],
+                gf: '終於有點像樣的料理了。櫛瓜和蝦仁熱量低，但那個鯷魚和魚露都很鹹，記得多喝水。還有，奶油不要手抖加太多！'
+            },
+            // --- 舊的：滑嫩番茄炒蛋 (彩蛋) ---
             {
                 type: 'main',
                 tags: ['雞蛋', '番茄'],
@@ -174,16 +242,12 @@ createApp({
                     { name: '雞蛋', qty: '3 顆' },
                     { name: '番茄醬', qty: '1 大匙' }
                 ],
-                steps: [
-                    '雞蛋炒半熟盛起，原鍋炒軟番茄。',
-                    '加入番茄醬煨煮，倒回雞蛋拌勻。'
-                ],
+                steps: ['雞蛋炒半熟盛起，原鍋炒軟番茄。', '加入番茄醬煨煮，倒回雞蛋拌勻。'],
                 gf: '不要以為番茄炒蛋就很健康，番茄醬裡全是糖！自己煮記得少放點醬。',
-                // 這裡藏了彩蛋訊息
                 secretMsg: '其實...我知道你工作很忙很累，但還是願意花時間為我們做飯。阿勛，謝謝你的用心，每一道菜都有家的味道，我們都吃得很幸福！❤️',
-                showSecret: false // 控制顯示狀態
+                showSecret: false
             },
-            // --- 櫛瓜 (下酒) ---
+            // --- 舊的：一煎入魂櫛瓜 ---
             {
                 type: 'side',
                 tags: ['櫛瓜'],
@@ -192,9 +256,9 @@ createApp({
                 img: 'https://images.unsplash.com/photo-1590408546194-e532b26090c2?w=800',
                 ingredients: [{ name: '櫛瓜', qty: '1 條' }, { name: '鹽巴、胡椒', qty: '適量' }],
                 steps: ['櫛瓜切厚片，抓醃調味。', '中小火慢煎至雙面金黃焦香。'],
-                gf: '櫛瓜切這麼厚是很懂吃啦，但拿來當下酒菜？我看你那瓶酒的熱量才是重點吧！'
+                gf: '櫛瓜切這麼厚是很懂吃啦，但拿來當下酒菜，我看你這瓶啤酒的熱量比這整盤櫛瓜還高吧？'
             },
-            // --- 照燒海苔豆腐 (下酒) ---
+            // --- 舊的：照燒海苔豆腐 ---
             {
                 type: 'side',
                 tags: ['豆腐', '海苔'],
@@ -205,7 +269,7 @@ createApp({
                 steps: ['豆腐包海苔沾粉煎熟。', '加入照燒醬煨煮入味。'],
                 gf: '把豆腐包成鰻魚飯的樣子很有創意，但那個醬汁糖分超高，自己克制一點！'
             },
-            // --- 蔥爆牛肉 (主食) ---
+            // --- 舊的：蔥爆牛肉 ---
             {
                 type: 'main',
                 tags: ['牛肉', '蔥', '大蒜', '辣椒'],
@@ -216,7 +280,7 @@ createApp({
                 steps: ['牛肉滑炒備用，爆香辛香料。', '混合快炒即可上桌。'],
                 gf: '這道菜是白飯殺手，但醬汁太鹹了！記得多配點水煮青菜平衡一下。'
             },
-            // --- 醬燒雞腿 (主食) ---
+            // --- 舊的：醬燒雞腿 ---
             {
                 type: 'main',
                 tags: ['雞腿肉', '蔥', '大蒜'],
@@ -244,7 +308,6 @@ createApp({
             return results.filter(r => r.type === currentTab.value);
         });
 
-        // 觸發彩蛋的函式
         const triggerSecret = (recipe) => {
             recipe.showSecret = true;
         };
